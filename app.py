@@ -42,7 +42,7 @@ def get_record(api, id):
 
 
 @app.route('/<api>/<id>', methods=['PUT'])
-def create_record(api, id):
+def update_record(api, id):
     content = r.get(api + ":" + str(id))
     payload = request.json
     r.set(api + ":" + str(id), json.dumps(payload))
