@@ -2,32 +2,17 @@ import os
 import redis
 import json
 from flask import Flask, request, jsonify
-from flask_httpauth import HTTPBasicAuth
 from redis import ConnectionError
 
 
 app = Flask(__name__)
-auth = HTTPBasicAuth()
 
-r = redis.from_url("redis://127.0.0.1:6379/1")
+r = redis.from_url(os.environ.get("REDIS_URL"))
 
 try:
     r.ping()
 except ConnectionError:
     exit(0)
-
-users = {
-    "john": "hello",
-    "susan": "bye"
-}
-
-
-@auth.get_password
-def get_pw(username):
-    if username in users:
-        return users.get(username)
-    return None
-
 
 
 @app.route('/')
@@ -69,7 +54,8 @@ def create_record(api, id):
 
 @app.route('/<api>/<id>', methods=['DELETE'])
 def delete_record(api, id):
-    return ''
+    r.delete(api + ":" + str(id))
+    return 'DELETED'
 
 
 
@@ -87,7 +73,6 @@ def get_records(api):
 
     
 @app.route('/clean', methods=['DELETE'])
-@auth.login_required
 def clean():
     r.flushall()
     return 'DELETED'
